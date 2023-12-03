@@ -77,6 +77,25 @@ fn test_number1() {
 }
 
 #[test]
+fn test_predicate() {
+    assert_eq!(
+        char_predicate(&|c: char| c.is_whitespace()).parse("  hello"),
+        ParseResult::Ok((Token::Predicate(' '), " hello"))
+    );
+    assert_eq!(
+        repeat(char_predicate(&|c: char| c.is_whitespace()), 1).parse("   hello"),
+        ParseResult::Ok((
+            Token::Repeat(vec![
+                Token::Predicate(' '),
+                Token::Predicate(' '),
+                Token::Predicate(' ')
+            ]),
+            "hello"
+        ))
+    );
+}
+
+#[test]
 fn test_mixed() {
     assert_eq!(
         sequence(vec![Box::new(string("Game ")), Box::new(number())]).parse("Game 34"),

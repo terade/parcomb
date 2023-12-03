@@ -23,6 +23,7 @@ pub enum Token {
     Repeat(Vec<Token>),
     Alternatively(Box<Token>),
     Number(i64),
+    Predicate(char),
 }
 
 pub fn string<'a, 'b>(string: &'b str) -> impl Parser<'a> + 'b {
@@ -115,5 +116,16 @@ pub fn number<'a>() -> impl Parser<'a> {
             Ok(num) => ParseResult::Ok((Token::Number(num), &state[num_str.len()..])),
             Err(_) => ParseResult::Err(save),
         }
+    }
+}
+
+pub fn char_predicate<'a, 'b, P: Fn(char) -> bool + 'b>(predicate: P) -> impl Parser<'a> + 'b {
+    move |state: State<'a>| {
+        if let Some(c) = state.chars().next() {
+            if predicate(c) {
+                return ParseResult::Ok((Token::Predicate(c), &state[1..]));
+            }
+        }
+        ParseResult::Err(state)
     }
 }
